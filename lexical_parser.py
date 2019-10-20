@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 ###############################################################
-# This script is used to
+# This script is used to parse lexical with state machine
 # Version : 1.0.0.1
 # usage :
 #
@@ -12,6 +12,7 @@
 
 import common_info
 from calc_token import Token
+from stack import Stack
 
 
 def _parse_keyword(char):
@@ -33,30 +34,42 @@ def parse_expression(expression):
     extract token from expression : numbers, operators, ();
     if there is unknown token in expression, thrown an exception UnknownToken
     :param expression:
-    :return: list, token info list, from left to right in expression, example : [{"type": "operator", "value": "+"}]
+    :return: list, Token list, from left to right in expression
     """
+    # reverse char list for stack, so it pop char from the begin of expression
     char_list = list(expression)
     # append a space at the end of %char_list%, to fetch the last number in expression
-    char_list.append(" ")
     tokens = []
-    number_list = []
+    buff = ""
+    i = 0
 
-    while True:
-        if not char_list:
-            break
-
-        char = char_list.pop(0)
+    while i < len(char_list):
+        char = char_list[i]
+        i += 1
 
         # check number
+        # if char is a digit, continue to fetch char until char is not a digit or char_list is parsed completely
         if char.isdigit():
-            number_list.append(char)
+            buff += char
+            while i < len(char_list):
+                char = char_list[i]
+                i += 1
+
+                if char.isdigit():
+                    buff += char
+                else:
+                    # rollback
+                    i -= 1
+                    break
+            tokens.append(Token(common_info.TYPE_NUM, buff))
+            buff = ""
             continue
 
         # if char is not a number, fetch last number
-        if number_list:
-            token = "".join(number_list)
+        if buff:
+            token = "".join(buff)
             tokens.append(Token(common_info.TYPE_NUM, token))
-            number_list = []
+            buff = []
 
         # check space and tab
         if char == ' ' or char == ' ':

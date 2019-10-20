@@ -11,8 +11,11 @@
 
 
 class Stack:
-    def __init__(self):
-        self.__array = []
+    def __init__(self, array=None):
+        if array:
+            self.__array = list(array)
+        else:
+            self.__array = []
 
     def __str__(self):
         return str(self.__array)
